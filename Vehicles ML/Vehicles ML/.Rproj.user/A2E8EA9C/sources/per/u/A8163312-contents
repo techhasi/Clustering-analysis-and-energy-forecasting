@@ -1,0 +1,94 @@
+#SubTask 2
+
+library(readxl)
+library(NbClust)
+library(factoextra)
+library(cluster)
+library(ggplot2)
+library(FactoMineR)
+
+# Load the dataset
+vehicles <- read_excel("vehicles.xlsx")
+
+# Visualize outliers using boxplots for each variable separately
+par(mfrow=c(3,6)) # Set the layout of the plots
+for (i in 2:19) {
+  boxplot(vehicles[,i], main=paste(colnames(vehicles)[i]))
+}
+
+# Outlier detection/removal using the Z-score method
+z_scores <- apply(vehicles[,2:19], 2, function(x) abs(scale(x)))
+vehicles <- vehicles[rowSums(z_scores < 3) == ncol(z_scores),]
+
+# Scaling using Min-Max scaling
+scaled_vehicles <- apply(vehicles[,2:19], 2, function(x) (x - min(x)) / (max(x) - min(x)))
+
+# Perform PCA on the scaled dataset
+pca_result <- PCA(scaled_vehicles, graph = FALSE)
+
+# Print eigenvalues and eigenvectors
+print(pca_result$eig)
+
+# Print cumulative score per principal component
+print(pca_result$eig[1:10, "cumul"])
+
+
+# Create a new dataset with principal components as attributes
+pc_dataset <- as.data.frame(pca_result$ind$coord)
+
+# Choose PCs with cumulative score > 92%
+chosen_pcs <- which(pca_result$eig[,"cumul"] > 92)
+pc_dataset <- pc_dataset[, chosen_pcs]
+
+Determine the number of clusters using NbClust
+nb_pca <- NbClust(pc_dataset, distance = "euclidean", min.nc = 2, max.nc = 10, method = "kmeans")
+print(nb_pca)
+
+# Determine the number of clusters using the elbow method
+fviz_nbclust(pc_dataset, kmeans, method = "wss")
+
+# Determine the number of clusters using the gap statistic method
+gap_stat_pca <- clusGap(pc_dataset, FUN = kmeans, nstart = 25, K.max = 10, B = 50)
+print(gap_stat_pca)
+
+# Determine the number of clusters using the silhouette method
+sil_pca <- silhouette(kmeans(pc_dataset, 2)$cluster, dist(pc_dataset))
+summary(sil_pca)
+fviz_silhouette(sil_pca)
+#Perform k-means clustering with the most favored k from the automated methods:
+
+chosen_k_pca <- max(best_k_nbclust_pca, best_k_gap_stat_pca, best_k_silhouette_pca) # Adjust as needed
+set.seed(123)
+kmeans_result_pca <- kmeans(vehicles_pca, centers = chosen_k_pca)
+
+# Display k-means output, including centers, clustered results, and BSS/TSS ratio
+kmeans_result_pca
+WSS_pca <- sum(kmeans_result_pca$tot.withinss)
+TSS_pca <- sum(kmeans_result_pca$totss)
+BSS_pca <- TSS_pca - WSS_pca
+BSS_ratio <- BSS_pca / TSS_pca
+
+# Print the BSS, WSS, and the ratio of BSS over TSS
+cat("BSS:", BSS, "\n")
+cat("WSS:", WSS, "\n")
+cat("Ratio of BSS over TSS:", BSS_ratio, "\n")
+
+# Provide the silhouette plot and average silhouette width score for the new k-means attempt:
+sil_pca <- silhouette(kmeans_result_pca$cluster, dist(vehicles_pca))
+fviz_silhouette(sil_pca)
+avg_sil_width_pca <- mean(sil_pca[, "sil_width"])
+cat("Average Silhouette Width Score:", avg_sil_width_pca, "\n")
+
+# Calculate Calinski-Harabasz Index
+calinski_harabasz_pca <- function(cluster_result, data) {
+  k <- length(unique(cluster_result$cluster))
+  n <- nrow(data)
+  BSS <- cluster_result$betweenss
+  WSS <- cluster_result$tot.withinss
+  
+  ch_index <- ((n - k) / (k - 1)) * (BSS / WSS)
+  return(ch_index)
+}
+
+ch_index_pca <- calinski_harabasz_pca(kmeans_result_pca, vehicles_pca)
+ch_index_pca

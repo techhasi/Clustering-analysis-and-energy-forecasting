@@ -1,0 +1,20 @@
+"0","```r
+
+
+# Fit k-means model with k=3
+k <- 3
+kmeans_model <- kmeans(transformed_data, centers = k, nstart = 25)
+
+# Generate silhouette plot
+silhouette_plot <- silhouette(kmeans_model$cluster, dist(transformed_data))
+
+# Calculate average silhouette width
+avg_sil_width <- mean(silhouette_plot[, 3])
+
+# Plot the silhouette plot
+plot(silhouette_plot, main = paste0(\"Silhouette Plot for k =\", k),
+     xlab = \"Silhouette Width\", ylab = \"Cluster\", border = NA)
+
+# Add average silhouette width as vertical line
+abline(v = avg_sil_width, lty = 2, lwd = 2, col = \"red\")
+```"

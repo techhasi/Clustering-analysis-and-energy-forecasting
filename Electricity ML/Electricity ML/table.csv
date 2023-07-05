@@ -1,0 +1,12 @@
+Neural Network Structure,RMSE,MAE,MAPE,sMAPE
+"1 Hidden Layer, 50 Hidden Units","0.8019","0.6607","1.0904","1.9003"
+"1 Hidden Layer, 100 Hidden Units","0.5555","0.4417","1.2414","1.3192"
+"1 Hidden Layer, 150 Hidden Units","0.8085","0.6646","1.0000","1.9999"
+"2 Hidden Layers, 50 Hidden Units Each","0.8077","0.6640","1.0002","1.9967"
+"2 Hidden Layers, 100 Hidden Units Each","0.8085","0.6646","1.0000","2.0000"
+"2 Hidden Layers, 150 Hidden Units Each","0.8085","0.6646","1.0000","2.0000"
+"3 Hidden Layers, 100 Hidden Units Each","0.8085","0.6646","1.0000","2.0000"
+"3 Hidden Layers, 150 Hidden Units Each","0.8085","0.6646","1.0000","2.0000"
+"1 Hidden Layer, 100 Hidden Units Each with tanh","0.8021","0.6602","1.0490","1.9686"
+"2 Hidden Layers, 150 Hidden Units Each with tanh","0.8085","0.6646","1.0000","2.0000"
+"3 Hidden Layers, 150,100,50 Hidden Units Each with tanh","0.8085","0.6646","1.0000","2.0000"

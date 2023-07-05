@@ -1,0 +1,87 @@
+library(data.table)
+library(tidyverse)
+library(plotly)
+library(readxl)
+library(neuralnet)
+library(caTools)
+library(useful)
+library(tictoc)
+library(Metrics)
+library(ggplot2)
+
+# Load the data
+uow.data <- read_excel("uow_consumption.xlsx")
+
+# Rename columns
+colnames(uow.data) <- c("date", "hour_18", "hour_19", "hour_20")
+
+for (i in c(1, 2, 3, 4, 7)) {
+  uow.data[paste0("t", i)] <- shift(uow.data$hour_20, n = i, type = "lag")
+}
+
+#z-score normalization
+uow.data.scaled <- as.data.frame(uow.data %>% mutate_at(vars(-date), scale, 
+                                                        center=T)) # Drop dates Column
+uow.data.scaled <- within(uow.data.scaled, rm(date))
+
+# Set the number of training samples
+num_train <- 380
+
+# Create a logical vector indicating which samples are in the training set
+train_indices <- rep(FALSE, nrow(uow.data.scaled))
+train_indices[1:num_train] <- TRUE
+
+# Create training and testing sets
+data.train <- uow.data.scaled[train_indices, ]
+data.test <- uow.data.scaled[!train_indices, ]
+
+
+# Define formula
+formula.1 <- `hour_20` ~ t1 + t2 + t3 + t4 + t7
+
+# Define hidden layer configurations
+hidden_configs <- list(
+  list(units = 5),
+  list(units = 50),
+  list(units = 100),
+  list(units = c(50, 50)),
+  list(units = c(100, 100)),
+  list(units = c(150, 150)),
+  list(units = c(100, 100, 100)),
+  list(units = c(150, 150, 150)),
+  list(units = 100, activation = "tanh"),
+  list(units = c(150, 150), activation = "tanh"),
+  list(units = c(150, 100, 50), activation = "tanh")
+)
+
+# Train neural nets and record training times and scores
+train_results <- lapply(hidden_configs, function(config) {
+  time_start <- Sys.time()
+  net <- neuralnet(
+    formula.1,
+    data = data.train,
+    hidden = config$units,
+    linear.output = FALSE,
+    rep = 5,
+    act.fct = ifelse(is.null(config$activation), "logistic", config$activation),
+    threshold = 2
+  )
+  time_end <- Sys.time()
+  list(
+    net = net,
+    time = time_end - time_start,
+    score = min(net$result.matrix["error", ])
+  )
+})
+
+# Print training scores
+cat("Training Scores (Logarithmic Loss) with formula = `hour_20`~t1+t2+t3+t7:\n")
+for (i in seq_along(train_results)) {
+  cat(
+    ifelse(i == 1, "", "\n"), 
+    paste("Hidden Layers:", paste(train_results[[i]]$net$hidden[[1]]$units, collapse = ", ")),
+    ifelse(!is.null(train_results[[i]]$net$act.fct),
+           paste("with activation", deparse(train_results[[i]]$net$act.fct)),
+           "with activation logistic"),
+    "\nScore:", train_results[[i
+                               

@@ -1,0 +1,52 @@
+"0","```r
+library(readxl)
+library(forecast)
+```"
+"1","Registered S3 method overwritten by 'quantmod':
+  method            from
+  as.zoo.data.frame zoo 
+Registered S3 methods overwritten by 'forecast':
+  method                 from     
+  autoplot.Arima         ggfortify
+  autoplot.acf           ggfortify
+  autoplot.ar            ggfortify
+  autoplot.bats          ggfortify
+  autoplot.decomposed.ts ggfortify
+  autoplot.ets           ggfortify
+  autoplot.forecast      ggfortify
+  autoplot.stl           ggfortify
+  autoplot.ts            ggfortify
+  fitted.ar              ggfortify
+  fortify.ts             ggfortify
+  residuals.ar           ggfortify
+"
+"0","```r
+library(neuralnet)
+```"
+"1","
+Attaching package: ‘neuralnet’
+
+The following object is masked from ‘package:dplyr’:
+
+    compute
+"
+"0","```r
+library(caret)
+library(MLmetrics)
+```"
+"1","
+Attaching package: ‘MLmetrics’
+
+The following objects are masked from ‘package:caret’:
+
+    MAE, RMSE
+
+The following object is masked from ‘package:base’:
+
+    Recall
+"
+"0","```r
+uow_consumption <-read_excel('C:/Users/User/OneDrive/Desktop/w1833551_20200730/w1833551_20200730/uow_consumption.xlsx')
+View(uow_consumption)
+uow_consumption
+```"

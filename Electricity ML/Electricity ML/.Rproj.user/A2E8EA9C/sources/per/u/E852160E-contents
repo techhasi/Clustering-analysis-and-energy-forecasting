@@ -1,0 +1,45 @@
+# Load required libraries
+library(tidyverse)
+library(neuralnet)
+
+# Load data and rename columns
+data <- read_excel("uow_consumption.xlsx")
+  
+# Rename columns
+colnames(data) <- c("date", "hour_18", "hour_19", "hour_20")
+
+# Separate training and testing data
+train_data <- data[1:380,]
+test_data <- data[381:nrow(data),]
+
+# Define function to create input/output matrices for AR approach
+create_io_matrix <- function(data, delay) {
+  input <- matrix(nrow = nrow(data) - delay, ncol = delay)
+  output <- data[(delay+1):nrow(data),"hour_20"]
+  
+  for (i in 1:delay) {
+    input[,i] <- data[(i):(nrow(data)-delay+i-1),paste0("hour_", 20-delay+i)]
+  }
+  
+  return(list(input = input, output = output))
+}
+# Test create_io_matrix() with delay = 1
+test_io_matrix <- create_io_matrix(train_data, 1)
+
+
+# Create input/output matrices for different delay values
+delays <- c(1,2,3,4,7) # Include delay of 7 for t-7 attribute
+io_matrices <- list()
+for (delay in delays) {
+  io_matrices[[as.character(delay)]] <- create_io_matrix(train_data, delay)
+}
+
+# Define function to normalize I/O matrices
+normalize_io_matrix <- function(io_matrix) {
+  normalized_input <- scale(io_matrix$input)
+  normalized_output <- scale(io_matrix$output)
+  return(list(input = normalized_input, output = normalized_output))
+}
+
+# Normalize I/O matrices
+normalized_io_matrices <- lapply(io_matrices, normalize_io_matrix)

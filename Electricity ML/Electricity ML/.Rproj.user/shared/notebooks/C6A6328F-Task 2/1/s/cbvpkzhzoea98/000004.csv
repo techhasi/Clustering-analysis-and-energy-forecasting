@@ -1,0 +1,8 @@
+"0","```r
+
+
+
+# Find number of principal components that explain at least 92% of variance
+num_pcs <- sum(prop_var <= 0.92) + 1
+
+```"

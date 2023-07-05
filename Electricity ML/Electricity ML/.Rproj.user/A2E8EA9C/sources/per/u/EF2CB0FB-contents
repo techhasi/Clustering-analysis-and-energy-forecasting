@@ -1,0 +1,50 @@
+# Load the required libraries
+library(readxl)
+library(neuralnet)
+
+# Load the data from the Excel file
+data <- read_excel("uow_consumption.xlsx")
+
+# Rename columns
+colnames(data) <- c("Date", "hour_18", "hour_19", "hour_20")
+
+# Extract the relevant columns for the 20:00 hour load and the date
+load <- data[, "hour_20"]
+date <- data[, "Date"]
+
+# Define the number of time-delayed inputs to use
+max_lag <- 4
+
+# Create a matrix of time-delayed inputs
+inputs <- matrix(0, nrow = length(load) - max_lag, ncol = max_lag)
+for (i in 1:max_lag) {
+  inputs[, i] <- load[(max_lag - i + 1):(length(load) - i)]
+}
+
+# Add the time-delayed load from one week before as an input
+inputs <- cbind(inputs, load[(max_lag - 7 + 1):(length(load) - 7)])
+
+# Define the output as the load for the next day
+output <- load[(max_lag + 1):length(load)]
+
+# Split the data into training and testing sets
+train_inputs <- inputs[1:380, ]
+train_output <- output[1:380]
+test_inputs <- inputs[381:length(inputs), ]
+test_output <- output[381:length(output)]
+
+# Normalize the input and output data
+train_inputs_norm <- apply(train_inputs, 2, function(x) (x - mean(x)) / sd(x))
+train_output_norm <- (train_output - mean(train_output)) / sd(train_output)
+test_inputs_norm <- apply(test_inputs, 2, function(x) (x - mean(x)) / sd(x))
+test_output_norm <- (test_output - mean(test_output)) / sd(test_output)
+
+# Train the MLP-NN model
+model <- neuralnet(train_inputs_norm, train_output_norm, hidden = c(5, 3), linear.output = TRUE)
+
+# Make predictions on the testing set
+predictions_norm <- compute(model, test_inputs_norm)$net.result
+predictions <- predictions_norm * sd(train_output) + mean(train_output)
+
+# Calculate the mean squared error of the predictions
+mse <- mean((predictions - test_output)^2)

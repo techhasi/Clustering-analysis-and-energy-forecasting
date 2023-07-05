@@ -1,0 +1,7 @@
+"0","```r
+
+# Perform k-means clustering with k=2
+set.seed(1234)
+kmeans_model_2 <- kmeans(transformed_data, centers = 2, nstart = 25)
+
+```"

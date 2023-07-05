@@ -1,0 +1,18 @@
+"0","```r
+
+uow_consumptionNorm <- data.frame(lapply(uow_consumptionframe,function(y){
+  return((y-min(y))/(max(y)-min(y)))
+}))
+names(uow_consumptionNorm)[2] <- 'eighteen_Hour'
+names(uow_consumptionNorm)[3] <- 'ninteen_Hour'
+names(uow_consumptionNorm)[4] <- 'twenty_Hour'
+set.seed(123)
+uow_consumption_train <- uow_consumptionNorm[1:380,]
+uow_consumption_test<- uow_consumptionNorm[381:470,]
+
+########## AR Approach ##########
+#Generating neural network in AR
+uow_consumption_nnar <- neuralnet(twenty_Hour~date + twenty_Hour, 
+                                  hidden=c(3,2),data=uow_consumption_train,linear.output=TRUE,threshold= 0.01)
+plot(uow_consumption_nnar)
+```"

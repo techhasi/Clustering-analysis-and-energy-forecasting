@@ -1,0 +1,62 @@
+# Load necessary libraries
+library(readxl)
+library(NbClust)
+library(factoextra)
+library(cluster)
+library(ggplot2)
+
+# Load dataset
+vehicles <- read_excel("vehicles.xlsx")
+
+# Pre-processing: Scaling and outlier detection/removal
+
+# Scale the data
+vehicles_scaled <- scale(vehicles[, 1:18])
+
+# Outlier detection and removal
+outliers <- apply(vehicles_scaled, 2, function(x) {
+  Q1 <- quantile(x, 0.25)
+  Q3 <- quantile(x, 0.75)
+  IQR <- Q3 - Q1
+  return(x < (Q1 - 1.5 * IQR) | x > (Q3 + 1.5 * IQR))
+})
+
+# Remove outliers
+vehicles_no_outliers <- vehicles_scaled[!apply(outliers, 1, any),]
+
+# Determine the number of cluster centers
+
+# NbClust
+nbclust_result <- NbClust(vehicles_no_outliers, min.nc = 2, max.nc = 10, method = "kmeans")
+best_k_nbclust <- nbclust_result$Best.nc[1]
+
+# Elbow method
+set.seed(123)
+fviz_nbclust(vehicles_no_outliers, kmeans, method = "wss") + geom_vline(xintercept = best_k_nbclust, linetype = "dashed")
+
+# Gap statistics
+set.seed(123)
+gap_stat <- clusGap(vehicles_no_outliers, FUN = kmeans, nstart = 25, K.max = 10, B = 50)
+fviz_gap_stat(gap_stat) + geom_vline(xintercept = gap_stat$bestK, linetype = "dashed")
+best_k_gap_stat <- gap_stat$bestK
+
+# Silhouette method
+silhouette_scores <- sapply(2:10, function(k) {
+  set.seed(123)
+  cluster_result <- kmeans(vehicles_no_outliers, centers = k)
+  silhouette_avg_width <- mean(silhouette(cluster_result$cluster, dist(vehicles_no_outliers))[, "sil_width"])
+  return(silhouette_avg_width)
+})
+
+best_k_silhouette <- which.max(silhouette_scores)
+
+# Perform k-means clustering with the chosen k value
+chosen_k <- max(best_k_nbclust, best_k_gap_stat, best_k_silhouette) # You can use another method to select the final k
+set.seed(123)
+kmeans_result <- kmeans(vehicles_no_outliers, centers = chosen_k)
+
+# Evaluate the clustering results using silhouette plots
+sil <- silhouette(kmeans_result$cluster, dist(vehicles_no_outliers))
+fviz_silhouette(sil)
+avg_sil_width <- mean(sil[, "sil_width"])
+

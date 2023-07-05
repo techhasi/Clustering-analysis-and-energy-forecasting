@@ -1,0 +1,7 @@
+"0","```r
+# Create new dataset with selected principal components
+pcs <- pca$x[, 1:num_pcs]
+transformed_data <- as.data.frame(pcs)
+
+boxplot(transformed_data)
+```"

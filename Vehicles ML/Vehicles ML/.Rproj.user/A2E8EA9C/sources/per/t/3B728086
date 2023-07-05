@@ -1,0 +1,28 @@
+{
+    "id": "3B728086",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1685167905319.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "id": "bd101262a226450a8e2c23ce595b5130",
+        "name": "pca_result",
+        "title": "pca_result",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 12948304202498162,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1685167905319,
+    "read_only": false,
+    "read_only_alternatives": []
+}

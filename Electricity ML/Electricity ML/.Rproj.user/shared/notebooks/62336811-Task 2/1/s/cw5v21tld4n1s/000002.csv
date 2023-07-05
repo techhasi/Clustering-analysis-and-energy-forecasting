@@ -1,0 +1,32 @@
+"0","```r
+# Apply PCA to the dataset
+pca <- prcomp(vehicles_scaled, center = TRUE, scale. = TRUE)
+
+# Print the eigenvalues and eigenvectors of the principal components
+print(summary(pca))
+```"
+"1","Importance of components:
+                          PC1    PC2     PC3     PC4     PC5
+Standard deviation     3.1336 1.8391 1.10113 1.07234 0.99057
+Proportion of Variance 0.5168 0.1780 0.06381 0.06052 0.05164
+Cumulative Proportion  0.5168 0.6948 0.75865 0.81917 0.87082
+                           PC6     PC7     PC8     PC9    PC10
+Standard deviation     0.94322 0.80869 0.56541 0.47516 0.33238
+Proportion of Variance 0.04682 0.03442 0.01683 0.01188 0.00581
+Cumulative Proportion  0.91764 0.95206 0.96889 0.98077 0.98659
+                          PC11    PC12    PC13    PC14    PC15
+Standard deviation     0.27347 0.24119 0.20012 0.16522 0.14508
+Proportion of Variance 0.00394 0.00306 0.00211 0.00144 0.00111
+Cumulative Proportion  0.99052 0.99358 0.99569 0.99713 0.99824
+                          PC16    PC17    PC18    PC19
+Standard deviation     0.12416 0.10846 0.07747 0.01857
+Proportion of Variance 0.00081 0.00062 0.00032 0.00002
+Cumulative Proportion  0.99905 0.99967 0.99998 1.00000
+"
+"0","```r
+# Calculate the cumulative proportion of variance explained by each principal component
+prop_var <- cumsum(pca$sdev^2 / sum(pca$sdev^2))
+
+# Plot the proportion of variance explained by each principal component
+plot(prop_var, type = \"b\", xlab = \"Number of PCs\", ylab = \"Cumulative Proportion of Variance Explained\")
+```"

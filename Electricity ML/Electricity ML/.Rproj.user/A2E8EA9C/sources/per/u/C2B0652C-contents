@@ -1,0 +1,64 @@
+library(readxl)
+library(neuralnet)
+
+# Load the data
+data <- read_excel("uow_consumption.xlsx")
+
+# Rename the columns in the data frame
+colnames(data) <- c("Date", "hour_18", "hour_19", "hour_20")
+
+
+# Rename the column to a valid name
+colnames(data)[2] <- "hour_20"
+
+# Extract the 20:00 hour consumption data
+consumption_20 <- data$hour_20
+
+# Create time-delayed input vectors
+input <- matrix(0, nrow = nrow(data), ncol = 4)
+for (i in 5:nrow(data)) {
+  input[i,] <- c(consumption_20[i-1], consumption_20[i-2], consumption_20[i-3], consumption_20[i-4])
+}
+
+# Create output vector
+output <- consumption_20[5:nrow(data)]
+
+# Split the data into training and testing sets
+train <- data[1:380,]
+test <- data[381:nrow(data),]
+
+
+# Normalize the input and output data
+normalize <- function(x) {
+  return((x - min(x)) / (max(x) - min(x)))
+}
+
+# Exclude the date column from normalization
+train_normalized <- as.data.frame(lapply(train[-1], normalize))
+test_normalized <- as.data.frame(lapply(test[-1], normalize))
+
+# Set the column names of the test_normalized data frame
+colnames(test_normalized) <- colnames(train_normalized)
+
+
+# Train and test MLP models
+set.seed(123)
+models <- list()
+for (i in 1:4) {
+  models[[i]] <- neuralnet(train_normalized, test_normalized, hidden = c(5,3), linear.output = FALSE)
+}
+
+
+# Evaluate the performance of the models
+rmse <- c()
+mae <- c()
+mape <- c()
+smape <- c()
+for (i in 1:4) {
+  pred <- predict(models[[i]], test_input_norm)
+  pred_denorm <- pred * (max(output) - min(output)) + min(output)
+  rmse[i] <- sqrt(mean((pred_denorm - test_output)^2))
+  mae[i] <- mean(abs(pred_denorm - test_output))
+  mape[i] <- mean(abs((pred_denorm - test_output) / test_output)) * 100
+  smape[i] <- mean(200 * abs(pred_denorm - test_output) / (abs(pred_denorm) + abs(test_output))) * 100
+}

@@ -1,0 +1,16 @@
+"0","num_hidden_layers <- 2
+
+# Define the neural network architecture
+arch <- c(rep(10, num_hidden_layers), 1)
+
+# Create the neural network model
+uow_consumption_model <- nnet(
+  formula = twenty_Hour ~ .,
+  data = uow_consumption_train,
+  size = arch,
+  linout = TRUE
+)
+"
+"2","Error in nnet(formula = twenty_Hour ~ ., data = uow_consumption_train,  : 
+  could not find function ""nnet""
+"
